@@ -1,0 +1,31 @@
+This program is command line driven.  You will probably need to specify all the arguments
+to describe your mirror setup.  The arguments are:
+
+	-d [diameter]		# the mirror diameter
+	-f [focal length] 	# the mirror focal length
+	-g [lines per inch]	# the grating density in lines per inch
+	-o [offset]		# distance the grating is moved inside (-) 
+				# or outside (+) focus
+	-k [conic constant]	# -1 == parabola, 0 == sphere, >0 oblate <0 prolate <-1 hyperboloid
+				# -1 is the default value
+
+This program writes a ppm format file to standard output.  I like it that way, but I'm 
+a Unix geek from way back.  You can use standard tools like netpbm to reformat them 
+into a graphic that you might like.
+
+I usually just run the program with a variety of offsets, and then combine them.
+
+#!/bin/sh 
+
+ARGS="-d 12.5 -f 63 -g 100 -k -1"
+
+./ronchi ${ARGS} -o -0.3 | pnmscale -width 256 | pnmpad -black -width 288 -height 288 > a.ppm
+./ronchi ${ARGS} -o -0.1 | pnmscale -width 256 | pnmpad -black -width 288 -height 288 > b.ppm
+./ronchi ${ARGS} -o  0.1 | pnmscale -width 256 | pnmpad -black -width 288 -height 288 > c.ppm
+./ronchi ${ARGS} -o  0.3 | pnmscale -width 256 | pnmpad -black -width 288 -height 288 > d.ppm
+./ronchi ${ARGS} -o  0.5 | pnmscale -width 256 | pnmpad -black -width 288 -height 288 > e.ppm
+./ronchi ${ARGS} -o  0.7 | pnmscale -width 256 | pnmpad -black -width 288 -height 288 > f.ppm
+
+pnmcat -lr a.ppm b.ppm c.ppm > abc.ppm
+pnmcat -lr d.ppm e.ppm f.ppm > def.ppm
+pnmcat -tb abc.ppm def.ppm | pnmtopng > test.png

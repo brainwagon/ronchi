@@ -4,43 +4,50 @@
 #include <unistd.h>
 #include <assert.h>
 
-/*                  _    _ ___      
- *  _ _ ___ _ _  __| |_ (_)_  )  __ 
- * | '_/ _ \ ' \/ _| ' \| |/ / _/ _|
- * |_| \___/_||_\__|_||_|_/___(_)__|
- *                                  
- * A more sophisticated program to simulate the Ronchi test using the 
- * geometrical approach.
+/*
+ *                       _     _ 
+ *  _ __ ___  _ __   ___| |__ (_)
+ * | '__/ _ \| '_ \ / __| '_ \| |
+ * | | | (_) | | | | (__| | | | |
+ * |_|  \___/|_| |_|\___|_| |_|_|
+ *                               
+ * A program for generating Ronchi test
+ * patterns using elementary geometric 
+ * optics.
+ * 
+ * Written by Mark VandeWettering, based
+ * on code first written in 2001, but updated in 2015.
  */
 
-typedef float Vec[3] ;
+typedef double Vec[3] ;
 
 #define RESOLUTION	(2048)
 
 #define VecDot(a,b) ((a)[0]*(b)[0]+(a)[1]*(b)[1]+(a)[2]*(b)[2])
 #define VecLen(a)   sqrtf(VecDot(a,a))
 
-float 	diameter = 6.0 ;
-float 	flen = 24.0 ;
-float	offset = -0.25 ;
-float	grating = 100.0 ;
-float 	K = -1.0 ;
+double 	diameter = 6.0 ;
+double 	flen = 24.0 ;
+double	offset = -0.25 ;
+double	grating = 100.0 ;
+double 	K = -1.0 ;
 
 /*
  * The formula for conics (with x/y swapped as per what I think are 
  * the more natural configuretion) is 
  *
- * (x^2 + y^2) - 2 R z + (K + 1) z^2 == 0
+ * The bit of mathematics you need to know is that the surface is defined
+ * by the following implicit surface:
  * 
- * 2 x, 2y, -2 R + 2 * (K + 1) * z 
- *
- * x^2 + y^2 == 2 R z + (K + 1) z^2
+ * (x^2 + y^2) - 2 R z + (K + 1) z^2 == 0
  * 
  * if K == -1, then 
  * 	z = (x^2 + y^2) / (2 * R)
  * else
- * 	z = (R - sqrt(K (-x^2 - y^2) + R^2 + 1 * (-x^2 + -y^2))) / (K + 1)
  * 	z = (R - sqrt((K + 1) (-x^2 - y^2) + R^2 )) / (K + 1)
+ *
+ * The normal vector is the 2 vector with components:
+ * 	-2 * x, -2 * y, 2 R - 2 * (K + 1) z
  *
  */
 
@@ -48,7 +55,7 @@ float 	K = -1.0 ;
 void
 VecNormalize(Vec a)
 {
-    float l = VecLen(a) ;
+    double l = VecLen(a) ;
 
     a[0] /= l ; a[1] /= l ; a[2] /= l ;
 }
@@ -64,7 +71,7 @@ VecSub(Vec r, Vec a, Vec b)
 void
 Reflect(Vec R, Vec I, Vec N)
 {
-    float c = -2.0 * VecDot(I, N) ;
+    double c = -2.0 * VecDot(I, N) ;
     R[0] = c * N[0] + I[0] ;
     R[1] = c * N[1] + I[1] ;
     R[2] = c * N[2] + I[2] ;
@@ -76,7 +83,7 @@ main(int argc, char *argv[])
 {
     int c, x, y ;
     Vec I, N, R, P, O ;
-    float r, fx, fy, gx, t ;
+    double r, fx, fy, gx, t ;
 
     while ((c = getopt(argc, argv, "d:f:g:k:o:")) != EOF) {
 	switch (c) {

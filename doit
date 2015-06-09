@@ -1,0 +1,15 @@
+#!/bin/sh 
+
+ARGS="-d 12.5 -f 63 -g 100 -k -1"
+
+./ronchi ${ARGS} -o -0.3 | pnmscale -width 256 | pnmpad -black -width 288 -height 288 > a.ppm
+./ronchi ${ARGS} -o -0.1 | pnmscale -width 256 | pnmpad -black -width 288 -height 288 > b.ppm
+./ronchi ${ARGS} -o  0.1 | pnmscale -width 256 | pnmpad -black -width 288 -height 288 > c.ppm
+./ronchi ${ARGS} -o  0.3 | pnmscale -width 256 | pnmpad -black -width 288 -height 288 > d.ppm
+./ronchi ${ARGS} -o  0.5 | pnmscale -width 256 | pnmpad -black -width 288 -height 288 > e.ppm
+./ronchi ${ARGS} -o  0.7 | pnmscale -width 256 | pnmpad -black -width 288 -height 288 > f.ppm
+
+pnmcat -lr a.ppm b.ppm c.ppm > abc.ppm
+pnmcat -lr d.ppm e.ppm f.ppm > def.ppm
+pnmcat -tb abc.ppm def.ppm | pnmtopng > test.png
+
