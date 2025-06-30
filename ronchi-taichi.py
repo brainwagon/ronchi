@@ -49,10 +49,10 @@ def paint(
 
             P = ti.math.vec3(x, y, z)
             I = P - O 
-            ti.math.normalize(I)
+            I = ti.math.normalize(I)
 
             N = ti.math.vec3(-2.0 * x, -2.0 * y, 4.0 * focal_length - 2.0 * (conic_constant + 1.0) * z) 
-            ti.math.normalize(N)
+            N = ti.math.normalize(N)
 
             R = reflect(I, N) ;
             print(R)
@@ -60,14 +60,7 @@ def paint(
             t = (2.0 * focal_length + offset - z) / R[2] ;
 
             if t >= 0.:
-                #
-                # I am confused at the moment why I had to change this to 4x grating_frequency 
-                # to get the image I expect.  I'll have to carefully walk through the formulas 
-                # again to figure out what the incompatibility to the C and numpy versions of the 
-                # code might be.
-                #
-                # gx = (P[0] + t * R[0]) * 2.0 * grating_frequency - 0.5 ;
-                gx = (P[0] + t * R[0]) * 4.0 * grating_frequency - 0.5 ;
+                gx = (P[0] + t * R[0]) * 2.0 * grating_frequency - 0.5 ;
                 pixels[i, j] = 1. if int(ti.math.floor(gx)) & 1 else 0.
             else:
                 pixels[i, j] = 0.5
@@ -137,6 +130,8 @@ def main():
                 args.offset += -0.01 
             elif e.key == ti.ui.DOWN:
                 args.offset +=  0.01
+            elif e.key == 'r':
+                args.offset = -0.25
         paint(
             args.diameter,
             args.conic_constant,
@@ -149,7 +144,7 @@ def main():
         label_str = f"{args.diameter:.1f} inch, {args.focal_length:.1f} FL, f/{args.focal_length/args.diameter:.2f}, {args.grating_frequency} lpi"
 
         gui = window.get_gui()
-        with gui.sub_window("Parameters", x=0, y=0, width=0.35, height=0.1): # Create a sub-window for the text
+        with gui.sub_window("Parameters", x=0, y=0, width=0.35, height=0.08): # Create a sub-window for the text
             gui.text(label_str) # Display the label
             gui.text(f'Offset: {abs(args.offset):.3f} {"inside" if args.offset < 0 else "outside"} focus' ) # Display the offset
         window.show()
