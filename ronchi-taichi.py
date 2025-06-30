@@ -11,7 +11,7 @@ except ImportError as e:
     print(e)
     sys.exit(1)
 
-ti.init(arch=ti.gpu)
+ti.init(arch=ti.cpu)
 
 # create an 800x800 image
 
@@ -32,6 +32,7 @@ def paint(
     focal_length: float,
     grating_frequency: float,
     offset: float,
+    invert: int
 ):
 
     O = ti.math.vec3(0., 0., 2.0 * focal_length + offset)
@@ -55,13 +56,15 @@ def paint(
             N = ti.math.normalize(N)
 
             R = reflect(I, N) ;
-            print(R)
 
             t = (2.0 * focal_length + offset - z) / R[2] ;
 
             if t >= 0.:
                 gx = (P[0] + t * R[0]) * 2.0 * grating_frequency - 0.5 ;
-                pixels[i, j] = 1. if int(ti.math.floor(gx)) & 1 else 0.
+                if invert:
+                    pixels[i, j] = 0. if int(ti.math.floor(gx)) & 1 else 1.
+                else:
+                    pixels[i, j] = 1. if int(ti.math.floor(gx)) & 1 else 0.
             else:
                 pixels[i, j] = 0.5
         else:
@@ -69,6 +72,7 @@ def paint(
 
 
 def main():
+    invert = 0
 
     # setup some standard settings
     parser = argparse.ArgumentParser(description="Generate Ronchi test patterns.")
@@ -132,12 +136,15 @@ def main():
                 args.offset +=  0.01
             elif e.key == 'r':
                 args.offset = -0.25
+            elif e.key == 'i':
+                invert = 1 - invert
         paint(
             args.diameter,
             args.conic_constant,
             args.focal_length,
             args.grating_frequency,
             args.offset,
+            invert
         )
         canvas.set_image(pixels)
 
